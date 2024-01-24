@@ -260,6 +260,13 @@ void LLVMCPUTileAndFusePass::runOnOperation() {
         maybeLoweringConfig.value().getScalableTileFlagVals(tilingLevel);
   }
 
+  // clhuang: enable scalable vector 
+  for(int i=0;i<tileSizes.size();i++){
+    if( hasEnableRVVScalableVectorType(consumerOp) && tileSizes[i]){
+      tileScalableFlags[i] = true;
+    }
+  }
+  
   if (llvm::all_of(tileSizes, [&](int64_t size) { return size == 0; })) {
     LLVM_DEBUG(llvm::dbgs() << "----- skip, all zeros -----\n");
     return;
