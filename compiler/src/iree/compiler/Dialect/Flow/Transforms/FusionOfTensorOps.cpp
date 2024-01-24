@@ -436,14 +436,16 @@ struct FusionOfTensorOpsPass
       context->getLoadedDialect<linalg::LinalgDialect>()
           ->getCanonicalizationPatterns(fusionPatterns);
       memref::populateResolveRankedShapedTypeResultDimsPatterns(fusionPatterns);
+    
 
-      GreedyRewriteConfig rewriteConfig;
-      rewriteConfig.maxIterations = GreedyRewriteConfig::kNoLimit;
-      if (failed(applyPatternsAndFoldGreedily(funcOp, std::move(fusionPatterns),
-                                              rewriteConfig))) {
-        funcOp->emitError("failed to apply fusion patterns");
-        return signalPassFailure();
-      }
+    //   clhuang: comment below to prevent the deletion of custom operation attributes.
+    //   GreedyRewriteConfig rewriteConfig;
+    //   rewriteConfig.maxIterations = GreedyRewriteConfig::kNoLimit;
+    //   if (failed(applyPatternsAndFoldGreedily(funcOp, std::move(fusionPatterns),
+    //                                           rewriteConfig))) {
+    //     funcOp->emitError("failed to apply fusion patterns");
+    //     return signalPassFailure();
+    //   }
 
       LLVM_DEBUG({
         llvm::dbgs() << "\n--- After first fixed point ---\n";
