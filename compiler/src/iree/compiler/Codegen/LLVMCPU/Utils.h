@@ -39,6 +39,9 @@ bool hasAnySVEFeature(IREE::HAL::ExecutableTargetAttr targetAttr);
 /// Returns true if the 'targetAttr' contains '+sme' in its cpu features.
 bool hasSMEFeature(IREE::HAL::ExecutableTargetAttr targetAttr);
 
+/// clhuang: enable scalable vector type
+bool hasEnableRVVScalableVectorType(Operation *op );
+
 } // namespace mlir::iree_compiler
 
 #endif // IREE_COMPILER_CODEGEN_LLVMCPU_UTILS_H_

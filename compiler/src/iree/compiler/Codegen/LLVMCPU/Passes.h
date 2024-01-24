@@ -137,8 +137,7 @@ void populateVectorContractCustomKernelsPatterns(
 void addCPUBufferOpsTileAndVectorizePipeline(OpPassManager &passManager,
                                              TilingConfig &tilingConfig,
                                              bool enableVectorMasking,
-                                             bool enableAArch64SSVE = false);
-
+                                             bool enableAArch64SSVE);
 /// Populates the passes to lower ops through data tiling transformations.
 void addCPUDataTilingPipeline(OpPassManager &passManager,
                               TilingConfig &tilingConfig,
@@ -166,7 +165,8 @@ void addMmt4dTilingExpertPassPipeline(OpPassManager &passManager,
 
 void addMultiTilingExpertPassPipeline(
     OpPassManager &passManager, TilingConfig &tilingConfig, bool enablePeeling,
-    bool enableVectorMasking, bool lowerToAVX2, bool enableAArch64SSVE = false);
+    bool enableVectorMasking, bool lowerToAVX2, bool enableAArch64SSVE = false,
+    bool enableMicrokernels = false);
 
 void addTensorToVectorsPassPipeline(OpPassManager &passManager,
                                     bool lowerToVectors = true);

@@ -54,4 +54,19 @@ bool hasSMEFeature(IREE::HAL::ExecutableTargetAttr targetAttr) {
   return hasFeature(targetAttr, "+sme");
 }
 
+bool hasEnableRVVScalableVectorType(Operation *op /*mlir::TilingInterface tilingInterface*/){
+    StringRef name = "rvv_tiling";
+    mlir::Attribute attr = op->getAttr(name);
+    
+    std::string attrStr;
+    llvm::raw_string_ostream os(attrStr);
+    attr.print(os);
+    os.flush();
+    
+    if( attrStr == "true" ){
+        return true;
+    }
+
+    return false;
+}
 } // namespace mlir::iree_compiler
