@@ -8,6 +8,7 @@
 #include "iree/compiler/Codegen/Common/Passes.h"
 #include "iree/compiler/Codegen/Common/TileSizeSelection.h"
 #include "mlir/Dialect/Affine/LoopUtils.h"
+#include "iree/compiler/Codegen/LLVMCPU/Utils.h"
 #include "mlir/Dialect/Linalg/Transforms/Hoisting.h"
 #include "mlir/Dialect/Linalg/Transforms/Transforms.h"
 #include "mlir/Dialect/MemRef/Transforms/Passes.h"
@@ -93,6 +94,13 @@ getVectorSizes(linalg::LinalgOp linalgOp, bool useConfiguredVectorSizes) {
   if (useConfiguredVectorSizes && loweringConfig) {
     TilingConfig tilingConfig(loweringConfig);
     auto [vectorSizes, scalableFlags] = tilingConfig.getVectorTileSizes();
+
+    // clhuang: enable scalable vector type for RVV. i.g. vector<[8]x?>
+    if (hasEnableRVVScalableVectorType(linalgOp)) {
+      for (int i = 0; i < vectorSizes.size(); i++) {
+        scalableFlags[i] = 1;
+      }
+    }
     // Replace zeros in canonical vector shape to turn it into a valid shape.
     std::replace(vectorSizes.begin(), vectorSizes.end(), 0, 1);
     return std::make_pair(vectorSizes, scalableFlags);
