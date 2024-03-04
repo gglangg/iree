@@ -353,12 +353,18 @@ void addCPUBufferOpsTileAndVectorizePipeline(OpPassManager &passManager,
             mlir::arm_sme::ArmStreamingMode::StreamingLocally));
 }
 
-void addMultiTilingExpertPassPipeline(
-    OpPassManager &passManager, TilingConfig &tilingConfig, bool enablePeeling,
-    bool enableVectorMasking, bool lowerToAVX2, bool enableAArch64SSVE) {
+void addMultiTilingExpertPassPipeline(OpPassManager &passManager,
+                                      TilingConfig &tilingConfig,
+                                      bool enablePeeling,
+                                      bool enableVectorMasking,
+                                      bool lowerToAVX2, bool enableAArch64SSVE,
+                                      bool enableMicrokernels) {
   addTileAndDistributePasses(passManager);
-
   OpPassManager &nestedModulePM = passManager.nest<ModuleOp>();
+  if (enableMicrokernels) {
+    nestedModulePM.addPass(
+        createCPULowerToUKernelsPass(clSkipIntermediateRoundings));
+  }
 
   SmallVector<int64_t> allFusableLevels(tilingConfig.getFusableLevels());
   // Apply tile and fuse to all the non-distribution fusable levels. Skip

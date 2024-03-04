@@ -152,6 +152,37 @@ static Type getElementTypeForUKernel(Value input) {
   return castOpSrcType;
 }
 
+// clhuang: create a interface for arith AddIOp
+static FailureOr<IREE::Codegen::UKernelOpInterface>
+matchDAGForUKernel(RewriterBase &rewriter, linalg::MatvecOp op,
+                   bool skipIntermediateRoundings) {
+  auto targetAttr = IREE::HAL::ExecutableTargetAttr::lookup(op);
+  const char ukernelName[] = "custom_matvec";
+  if (!hasUkernel(targetAttr, ukernelName)) {
+    return failure();
+  }
+  Value lhs = getInputForUKernel(op.getDpsInputOperand(0)->get());
+  Value rhs = getInputForUKernel(op.getDpsInputOperand(1)->get());
+  Value out = op.getDpsInitOperand(0)->get();
+  auto outType = llvm::cast<ShapedType>(out.getType());
+
+  Location loc = op.getLoc();
+
+  auto fn = getFnNameAndDefAttrs(ukernelName, rewriter, targetAttr);
+  SmallVector<Type> returnTypes{outType};
+  if (!isVMVXBackend(targetAttr)) {
+    // Hack to avoid issues with void-returning functions in llvm-cpu.
+    // Note that the first return value, of tensor type, disappears in
+    // bufferization.
+    returnTypes.push_back(rewriter.getI32Type());
+  }
+  auto genericMicroKernelOp = rewriter.create<IREE::Codegen::UKernelGenericOp>(
+      loc, returnTypes, fn.name, ValueRange{lhs, rhs}, out, ValueRange{},
+      /*fn_def_attrs=*/rewriter.getDictionaryAttr(fn.defAttrs),
+      /*strided_outer_dims=*/rewriter.getIndexAttr(1));
+  return cast<IREE::Codegen::UKernelOpInterface>(
+      genericMicroKernelOp.getOperation());
+}
 /// Matches an (linalg.fill -> )? linalg.mmt4d operation sequence and converts
 /// it into a iree_codegen.ukernel.mmt4d operation, that is later lowered
 /// into a call to the microkernel.
@@ -617,6 +648,11 @@ void CPULowerToUKernelsPass::runOnOperation() {
   patterns.insert<LowerToUKernelPattern<tensor::PackOp>,
                   LowerToUKernelPattern<tensor::UnPackOp>>(context,
                                                            isVMVXBackend);
+  // clhuang: TODO: enable riscv ukernel.
+  // We should create a interface for MatvecOp.
+  patterns.insert<LowerToUKernelPattern<linalg::MatvecOp>>(
+      context, allTargets, skipIntermediateRoundings);
+
   // These patterns are inherently specific to the VMVX backend.
   patterns.insert<LowerToUKernelPattern<IREE::Codegen::QueryTileSizesOp>>(
       context, isVMVXBackend);
