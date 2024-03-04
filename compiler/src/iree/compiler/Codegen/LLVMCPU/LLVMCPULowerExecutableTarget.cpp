@@ -155,7 +155,7 @@ void LLVMCPULowerExecutableTargetPass::runOnOperation() {
     addMultiTilingExpertPassPipeline(pipeline, tilingConfig,
                                      /*enablePeeling=*/false,
                                      enableVectorMasking, lowerToAVX2,
-                                     enableAArch64SSVE);
+                                     enableAArch64SSVE, enableMicrokernels);
     break;
   }
   case IREE::Codegen::DispatchLoweringPassPipeline::
@@ -164,7 +164,7 @@ void LLVMCPULowerExecutableTargetPass::runOnOperation() {
     addMultiTilingExpertPassPipeline(pipeline, tilingConfig,
                                      /*enablePeeling=*/true,
                                      enableVectorMasking, lowerToAVX2,
-                                     enableAArch64SSVE);
+                                     enableAArch64SSVE, enableMicrokernels);
     break;
   }
   case IREE::Codegen::DispatchLoweringPassPipeline::
