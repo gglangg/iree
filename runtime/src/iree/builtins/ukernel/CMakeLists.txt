@@ -25,6 +25,7 @@ add_custom_command(OUTPUT internal_headers_filegroup.stamp
   DEPENDS
     "common.h"
     "exported_bits.h"
+    "matvec.h"
     "mmt4d.h"
     "mmt4d_internal.h"
     "pack.h"
@@ -45,6 +46,7 @@ iree_cc_library(
   HDRS
     "common.h"
     "exported_bits.h"
+    "matvec.h"
     "mmt4d.h"
     "mmt4d_internal.h"
     "pack.h"
@@ -64,6 +66,7 @@ iree_cc_library(
   HDRS
     "common.h"
     "exported_bits.h"
+    "matvec.h"
     "mmt4d.h"
     "mmt4d_internal.h"
     "pack.h"
@@ -87,6 +90,8 @@ iree_cc_library(
   SRCS
     "common.h"
     "exported_bits.h"
+    "matvec.c"
+    "matvec.h"
     "mmt4d.c"
     "mmt4d.h"
     "mmt4d_internal.h"
@@ -163,6 +168,7 @@ iree_bitcode_library(
     "fallback.c"
     "mmt4d.c"
     "mmt4d_tile.c"
+    "matvec.c"
 )
 
 iree_bitcode_library(
@@ -177,6 +183,7 @@ iree_bitcode_library(
     "fallback.c"
     "mmt4d.c"
     "mmt4d_tile.c"
+    "matvec.c"
 )
 
 iree_link_bitcode(
@@ -209,6 +216,7 @@ iree_link_bitcode(
   NAME
     ukernel_bitcode_riscv_64
   SRCS
+    "arch/riscv_64/ukernel_bitcode_arch_riscv_64.bc"
     "ukernel_bitcode_generic_riscv_64.bc"
 
 )
