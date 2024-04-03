@@ -161,12 +161,42 @@ matchDAGForUKernel(RewriterBase &rewriter, linalg::MatvecOp op,
   if (!hasUkernel(targetAttr, ukernelName)) {
     return failure();
   }
+  Location loc = op.getLoc();
   Value lhs = getInputForUKernel(op.getDpsInputOperand(0)->get());
   Value rhs = getInputForUKernel(op.getDpsInputOperand(1)->get());
   Value out = op.getDpsInitOperand(0)->get();
+  Value m = rewriter.create<tensor::DimOp>(loc, lhs, 0);
+  Value n = rewriter.create<tensor::DimOp>(loc, lhs, 1);
+  Value out_d = rewriter.create<tensor::DimOp>(
+      loc, out, 0); // arr[m,n] * arr[n] = abns[m]
   auto outType = llvm::cast<ShapedType>(out.getType());
 
-  Location loc = op.getLoc();
+  uint32_t flags = 0;
+  // Check if the accumulator is zero-filled.
+  llvm::errs() << "------------------------------------\n";
+  if (isInitializedToZero(out)) {
+    // Not setting flags |= IREE_UK_FLAG_MMT4D_ACCUMULATE, so the mmt4d op won't
+    // read the existing accumulator, so its defining op can be discarded.
+    if (auto fillOp = out.getDefiningOp<linalg::FillOp>()) {
+      out = fillOp.getDpsInitOperand(0)->get();
+    }
+    llvm::errs() << "read the existing accumulator.\n";
+  } else {
+    llvm::errs() << "Tell the mmt4d op to read the existing accumulator.\n";
+    // Tell the mmt4d op to read the existing accumulator.
+    flags = IREE_UK_FLAG_MMT4D_ACCUMULATE;
+  }
+
+  Value flagsVal = rewriter.create<arith::ConstantOp>(
+      loc, rewriter.getI32IntegerAttr(flags));
+  llvm::errs() << lhs << "\n";
+  llvm::errs() << rhs << "\n";
+  llvm::errs() << out << "\n";
+  llvm::errs() << m << "\n";
+  llvm::errs() << n << "\n";
+  llvm::errs() << out_d << "\n";
+  llvm::errs() << flagsVal << "\n";
+  llvm::errs() << "------------------------------------\n";
 
   auto fn = getFnNameAndDefAttrs(ukernelName, rewriter, targetAttr);
   SmallVector<Type> returnTypes{outType};
@@ -177,7 +207,8 @@ matchDAGForUKernel(RewriterBase &rewriter, linalg::MatvecOp op,
     returnTypes.push_back(rewriter.getI32Type());
   }
   auto genericMicroKernelOp = rewriter.create<IREE::Codegen::UKernelGenericOp>(
-      loc, returnTypes, fn.name, ValueRange{lhs, rhs}, out, ValueRange{},
+      loc, returnTypes, fn.name, ValueRange{lhs, rhs}, out,
+      ValueRange{m, n, out_d},
       /*fn_def_attrs=*/rewriter.getDictionaryAttr(fn.defAttrs),
       /*strided_outer_dims=*/rewriter.getIndexAttr(1));
   return cast<IREE::Codegen::UKernelOpInterface>(
@@ -282,6 +313,15 @@ matchDAGForUKernel(RewriterBase &rewriter, linalg::Mmt4DOp op,
     // bufferization.
     returnTypes.push_back(rewriter.getI32Type());
   }
+  llvm::errs() << "*********************\n";
+  llvm::errs() << m << '\n';
+  llvm::errs() << n << '\n';
+  llvm::errs() << k << '\n';
+  llvm::errs() << m0 << '\n';
+  llvm::errs() << n0 << '\n';
+  llvm::errs() << k0 << '\n';
+  llvm::errs() << flagsVal << '\n';
+  llvm::errs() << "*********************\n";
   auto genericMicroKernelOp = rewriter.create<IREE::Codegen::UKernelGenericOp>(
       loc, returnTypes, fn.name, ValueRange{lhs, rhs}, out,
       ValueRange{m, n, k, m0, n0, k0, flagsVal},

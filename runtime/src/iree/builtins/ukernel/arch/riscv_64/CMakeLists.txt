@@ -13,6 +13,14 @@ iree_add_all_subdirs()
 iree_compiler_targeting_iree_arch(_IREE_UKERNEL_BITCODE_BUILD_RISCV_64 "riscv_64")
 if(_IREE_UKERNEL_BITCODE_BUILD_RISCV_64)
 
+
+## clhuang: TODO: specific
+iree_select_compiler_opts(IREE_UK_COPTS_RISCV_64_BASE
+  CLANG_OR_GCC
+    "-march=rv64gcv"
+)
+
+
 iree_bitcode_library(
   NAME
     ukernel_bitcode_arch_riscv_64_entry_points
@@ -62,11 +70,7 @@ if (NOT (IREE_ARCH STREQUAL "riscv_64"))
 endif()
 
 
-## clhuang: TODO: specific
-iree_select_compiler_opts(IREE_UK_COPTS_RISCV_64_BASE
-  CLANG_OR_GCC
-    "-march=rv64gcv"
-)
+
 
 
 check_cxx_compiler_flag("${IREE_UK_COPTS_RISCV_64_BASE}" IREE_UK_COPTS_RISCV_64_BASE)

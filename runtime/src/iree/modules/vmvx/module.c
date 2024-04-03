@@ -585,6 +585,62 @@ IREE_VMVX_ABI_EXPORT(iree_vmvx_mmt4d, mmt4d, v) {
 }
 
 //===----------------------------------------------------------------------===//
+// Exported matvec function definitions
+//===----------------------------------------------------------------------===//
+
+IREE_VMVX_ABI_FIXED_STRUCT(matvec, rIIrIIrIIIIIiiii, {
+  iree_vm_ref_t lhs_ref;
+  int64_t lhs_offset;
+  int64_t lhs_row_stride;
+  iree_vm_ref_t rhs_ref;
+  int64_t rhs_offset;
+  int64_t rhs_row_stride;
+  iree_vm_ref_t out_ref;
+  int64_t out_offset;
+  int64_t out_row_stride;
+  int64_t m;
+  int64_t n;
+  int64_t out_d;
+});
+IREE_VMVX_ABI_DEFINE_SHIM(matvec, v);
+
+IREE_VMVX_ABI_EXPORT(iree_vmvx_custom_matvec, matvec, v) {
+  IREE_TRACE_ZONE_BEGIN(z0);
+  iree_host_size_t M = (iree_host_size_t)args->m;
+  iree_host_size_t N = (iree_host_size_t)args->n;
+  iree_host_size_t OUT_D = (iree_host_size_t)args->out_d;
+  int in_elem_size = 2; // i16 = 2 byte
+  int out_elem_size = 2; // i16 = 2 byte
+  MAP_BUFFER_2D_UNTYPED_RO(lhs,
+                           /*dtype_size=*/in_elem_size,
+                           /*buffer_ref=*/args->lhs_ref,
+                           /*offset=*/args->lhs_offset,
+                           /*stride0=*/args->lhs_row_stride,
+                           /*stride1=*/1,
+                           /*size0=*/M,
+                           /*size1=*/N);
+  MAP_BUFFER_2D_UNTYPED_RO(rhs, /*dtype_size=*/in_elem_size,
+                           /*buffer_ref=*/args->rhs_ref,
+                           /*offset=*/args->rhs_offset,
+                           /*stride0=*/args->rhs_row_stride,
+                           /*stride1=*/1,
+                           /*size0=*/N,
+                           /*size1=*/1);
+  MAP_BUFFER_2D_UNTYPED_RW(out, /*dtype_size=*/out_elem_size,
+                           /*buffer_ref=*/args->out_ref,
+                           /*offset=*/args->out_offset,
+                           /*stride0=*/args->out_row_stride,
+                           /*stride1=*/1,
+                           /*size0=*/M,
+                           /*size1=*/1);
+  iree_uk_custom_matvec(lhs, 0 /*offsets already accounted for*/, lhs_stride0,
+                        rhs, 0, rhs_stride0, out, 0, out_stride0, M, N, OUT_D,
+                        (const iree_uk_uint64_t*)iree_cpu_data_fields());
+  IREE_TRACE_ZONE_END(z0);
+  return iree_ok_status();
+}
+
+//===----------------------------------------------------------------------===//
 // Exported pack function definitions
 //===----------------------------------------------------------------------===//
 

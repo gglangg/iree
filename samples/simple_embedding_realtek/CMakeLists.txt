@@ -83,6 +83,8 @@ iree_cc_binary(
     iree::task::api
     iree::vm
     iree::vm::bytecode::module
+  LINKOPTS
+    --static
 )
 
 iree_native_test(
