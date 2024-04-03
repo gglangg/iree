@@ -3,8 +3,8 @@
 #ifndef IREE_BUILTINS_UKERNEL_ARCH_RISCV_64_COMMON_RISCV_64_ENTRY_POINT_H_
 #define IREE_BUILTINS_UKERNEL_ARCH_RISCV_64_COMMON_RISCV_64_ENTRY_POINT_H_
 
-#include "iree/builtins/ukernel/common.h"
 #include "iree/schemas/cpu_data.h"
+
 
 #if defined(IREE_DEVICE_STANDALONE)
 // Standalone builds (e.g. bitcode) use our own Clang, supporting everything.

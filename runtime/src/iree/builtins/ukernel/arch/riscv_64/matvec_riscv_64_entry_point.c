@@ -3,17 +3,16 @@
 
 #include "iree/builtins/ukernel/arch/riscv_64/common_riscv_64.h"
 #include "iree/builtins/ukernel/arch/riscv_64/common_riscv_64_entry_point.h"
+#include "iree/builtins/ukernel/arch/riscv_64/matvec_riscv_64_internal.h"
+#include "iree/builtins/ukernel/common.h"
 #include "iree/builtins/ukernel/matvec.h"
 
-IREE_UK_MATVEC_TILE_FUNC_DECL(iree_uk_matvec_tile_i16i16i16_riscv_64)
-
 // Architecture-specific implementation.
+// Tghe actual implementation is located here.
 iree_uk_matvec_tile_func_t iree_uk_matvec_select_tile_func_arch(
     const iree_uk_matvec_params_t* params) {
-  return iree_uk_matvec_tile_i16i16i16_riscv_64;
+  // if case.....__amd64
+  // TODO(clhuang): should select different implementation based on the type of
+  // the data.
+  return iree_uk_matvec_tile_i16i16_i16_riscv_64;        
 }
-
-void iree_uk_matvec_tile_i16i16i16_riscv_64(
-    void* IREE_UK_RESTRICT out_tile, const void* IREE_UK_RESTRICT lhs_panel,
-    const void* IREE_UK_RESTRICT rhs_panel,
-    const iree_uk_matvec_params_t* params) {}
