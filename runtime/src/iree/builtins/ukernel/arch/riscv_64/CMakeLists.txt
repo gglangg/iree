@@ -8,6 +8,8 @@
 # To disable autogeneration for this file entirely, delete this header.        #
 ################################################################################
 
+if(IREE_BUILD_COMPILER)
+
 iree_add_all_subdirs()
 
 iree_compiler_targeting_iree_arch(_IREE_UKERNEL_BITCODE_BUILD_RISCV_64 "riscv_64")
@@ -119,3 +121,5 @@ iree_cc_library(
 )
 
 set(IREE_UK_ARCH_DEPS "iree::builtins::ukernel::arch::riscv_64" PARENT_SCOPE)
+
+endif() # IREE_BUILD_COMPILER

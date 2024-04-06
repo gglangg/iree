@@ -8,9 +8,9 @@
 # To disable autogeneration for this file entirely, delete this header.        #
 ################################################################################
 
+if(NOT IREE_BUILD_COMPILER)
 iree_add_all_subdirs()
 
-if(NOT IREE_BUILD_COMPILER)
 iree_compiler_targeting_iree_arch(_IREE_COMPILER_TARGETING_RISCV_64 "riscv_64")
 if(IREE_HAL_DRIVER_LOCAL_SYNC AND
    IREE_HAL_EXECUTABLE_LOADER_EMBEDDED_ELF AND
