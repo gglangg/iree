@@ -72,6 +72,34 @@ enumerateMatmulTileRiscv32(ExecutableTargetAttr target) {
   return {};
 }
 
+// Enumerate tile sizes to choose from on riscv64.
+// For narrow-{M,N} cases, this only enumerates on narrow M. The narrow-N cases
+// are handled by transposition in chooseMatmulTile.
+static SmallVector<TileMxNxK>
+enumerateMatmulTileRiscv64(ExecutableTargetAttr target) {
+  // if no riscv vector extension, then we do fallback.
+  if (!hasFeature(target, "+v")) {
+    return {};
+  }
+
+  if (!hasFeature(target, "+zvl512b")) {
+  
+  }
+  
+  // currently, we do not care about the scalable vector type; we only care about the microkernel.
+  if (hasUkernel(target)) {
+    return {
+        // TODO(clhuang: should be consider about vlen, i.g. +vl512).
+        // assume types are f32
+        TileMxNxK{4, 8, 1}, 
+        TileMxNxK{2, 8, 1}, 
+        TileMxNxK{1, 8, 1}, 
+    };
+  }
+  // Fallback - no architecture-optimized tile size for this case.
+  return {};
+}
+
 // Enumerate tile sizes to choose from on arm64.
 // For narrow-{M,N} cases, this only enumerates on narrow M. The narrow-N cases
 // are handled by transposition in chooseMatmulTile.
@@ -439,6 +467,9 @@ enumerateMatmulTileMxNxK(linalg::ContractionDimensions cDims,
   }
   if (isRISCV32(target)) {
     return enumerateMatmulTileRiscv32(target);
+  }
+  if (isRISCV64(target)) {
+    return enumerateMatmulTileRiscv64(target);
   }
   return {};
 }
