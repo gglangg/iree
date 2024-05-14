@@ -220,6 +220,11 @@ bool isRISCV(IREE::HAL::ExecutableTargetAttr targetAttr) {
   return triple && triple.value().isRISCV();
 }
 
+bool isRISCV64(IREE::HAL::ExecutableTargetAttr targetAttr) {
+  std::optional<llvm::Triple> triple = getTargetTriple(targetAttr);
+  return triple && triple.value().isRISCV64();
+}
+
 bool isRISCV32(IREE::HAL::ExecutableTargetAttr targetAttr) {
   std::optional<llvm::Triple> triple = getTargetTriple(targetAttr);
   return triple && triple.value().isRISCV32();
