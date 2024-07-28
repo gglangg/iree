@@ -19,7 +19,6 @@ iree_uk_matvec_tile_i16i16_i16_impl_riscv_64(
   size_t vlmax = __riscv_vsetvlmax_e16m1();
 
   for (int i = 0; i < params->M; i++) {
-    int16_t temp = 0;
     size_t vl;
     const iree_uk_int16_t* lv_ptr = &lhs_ptr[i * params->N];
     const iree_uk_int16_t* rv_ptr = &rhs_ptr[0];
@@ -37,31 +36,6 @@ iree_uk_matvec_tile_i16i16_i16_impl_riscv_64(
     
     out_ptr[i] = sum ;
   }
-
-  // A[m][n] * B[n] = C[m]
-  // size_t vlmax = __riscv_vsetvlmax_e64m1();
-  // for (int i = 0; i < params->M; ++i) {
-  //   for (int j = 0; j < params->N; ++j) {
-  //     int16_t *ptr_a = &a[i][0];
-  //     int16_t *ptr_b = &b[j][0];
-  //     int k = o;
-  //     vfloat64m1_t vec_s = __riscv_vfmv_v_f_f64m1(0, vlmax);
-  //     vfloat64m1_t vec_zero = __riscv_vfmv_v_f_f64m1(0, vlmax);
-  //     for (size_t vl; k > 0; k -= vl, ptr_a += vl, ptr_b += vl) {
-  //       vl = __riscv_vsetvl_e64m1(k);
-
-  //       vfloat64m1_t vec_a = __riscv_vle64_v_f64m1(ptr_a, vl);
-  //       vfloat64m1_t vec_b = __riscv_vle64_v_f64m1(ptr_b, vl);
-
-  //       vec_s = __riscv_vfmacc_vv_f64m1(vec_s, vec_a, vec_b, vl);
-  //     }
-
-  //     vfloat64m1_t vec_sum;
-  //     vec_sum = __riscv_vfredusum_vs_f64m1_f64m1(vec_s, vec_zero, vlmax);
-  //     double sum = __riscv_vfmv_f_s_f64m1_f64(vec_sum);
-  //     c[i][j] = sum;
-  //   }
-  // }
 }
 
 IREE_UK_MATVEC_TILE_FUNC_IMPL_FOR(iree_uk_matvec_tile_i16i16_i16_impl_riscv_64,
